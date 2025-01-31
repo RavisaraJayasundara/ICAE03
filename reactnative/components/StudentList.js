@@ -8,12 +8,24 @@ import {
   ScrollView,
   Button,
 } from "react-native";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { students } from "./StudentsDb";
+import {useNavigation} from '@react-navigation/native';
 
-export default function StudentList() {
+export default function StudentList({route}) {
   const [studentsData, setStudentsData] = useState(students);
+  const navigation = useNavigation();
 
+  useEffect(()=>{
+      if(route?.params?.newStudent){
+        const {newStudent} =route.params;
+        setStudentsData(prev=>[...prev,newStudent])
+      }
+      if(route?.params?.updatedStudent){
+        const{deletedStudent}=route.params;
+        setStudentsData(prev=>prev.filter(student=>student.id !== deletedStudent.id))
+      }
+  },[route?.params])
   return (
     <ScrollView>
       <View>
@@ -24,7 +36,7 @@ export default function StudentList() {
           data={studentsData}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.card}>
+            <TouchableOpacity style={styles.card} onPress={()=>{navigation.navigate('StudentProfile',{student:item})}}>
               <Image source={item.profile_pic} style={styles.image} />
               <Text>{item.name}</Text>
             </TouchableOpacity>
@@ -32,7 +44,7 @@ export default function StudentList() {
         />
       </View>
       <View>
-        <Button title="+" />
+        <Button title="+" onPress={()=>navigation.navigate('AddStudent')} />
       </View>
       <View>
         <Text style={styles.footer}>UoV @ 2025</Text>
